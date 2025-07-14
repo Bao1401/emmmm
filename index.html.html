@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>💖 Nhắc Bé Iu Kỉ Luật</title>
+
+  <!-- FullCalendar -->
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #ffe0f0, #fff0f5);
+      padding: 10px;
+      overflow-x: hidden;
+      color: #cc0055;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2em;
+      color: #e60073;
+      margin-top: 1em;
+    }
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.4em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    #welcomeOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 192, 203, 0.95);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: transform 1s ease-out;
+      padding: 20px;
+      text-align: center;
+    }
+    #welcomeOverlay.slide-out {
+      transform: translateY(-100%);
+    }
+    #welcomeOverlay h2 {
+      font-size: 1.5em;
+      margin-bottom: 15px;
+    }
+    #welcomeOverlay button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #ff66a3;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    #taskForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    #taskForm input[type="text"],
+    #taskForm input[type="date"],
+    #taskForm select {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ff99c2;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #ff66a3;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .submitted-image {
+      margin-top: 10px;
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 2px dashed pink;
+    }
+    .reminder {
+      color: red;
+      font-weight: bold;
+    }
+    .completed {
+      color: green;
+    }
+    #scoreDisplay {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #e60073;
+    }
+    #taskColumns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .task-column {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+      background: #fff0f5;
+      border-radius: 15px;
+      padding: 10px;
+      box-shadow: 0 0 5px pink;
+    }
+    .task-column.must {
+      border-top: 5px solid #ff3366;
+    }
+    .task-column.need {
+      border-top: 5px solid #ff9933;
+    }
+    .task-column.should {
+      border-top: 5px solid #66ccff;
+    }
+    .task-column h4 {
+      text-align: center;
+      margin: 5px 0;
+      color: #cc0055;
+    }
+    li {
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fff;
+      border-radius: 10px;
+      word-wrap: break-word;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    #calendar {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .fc {
+      overflow-x: auto;
+    }
+    .fc-toolbar-title {
+      color: #e60073;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    .fc-button {
+      background-color: hotpink !important;
+      border: none !important;
+      border-radius: 8px !important;
+    }
+    @media (max-width: 768px) {
+      .fc-toolbar-title {
+        font-size: 16px;
+      }
+      .fc-button {
+        font-size: 12px;
+        padding: 4px 8px;
+      }
+    }
+    @media (max-width: 768px) {
+  #calendar {
+    font-size: 12px;
+  }
+  .fc .fc-toolbar.fc-header-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+  <div id="welcomeOverlay">
+    <h2>💗 Chào mừng tình yêu quay trở lại! 💗</h2>
+    <button onclick="startApp()">Bắt đầu nào 💕</button>
+  </div>
+
+  <h1>💖Báo cáo yêu thương💖</h1>
+  <div id="scoreDisplay">Điểm của bé: 0</div>
+
+  <div id="taskForm">
+    <input type="text" id="taskInput" placeholder="💌 List to do...">
+    <select id="priorityInput">
+      <option value="Must">🔥 Must</option>
+      <option value="Need">⏰ Need</option>
+      <option value="Should">🕗 Should</option>
+    </select>
+    <input type="date" id="dueDateInput">
+    <button onclick="addTask()">Thêm 💖</button>
+  </div>
+
+  <div id="taskColumns">
+    <div class="task-column must">
+      <h4>🔥 Must</h4>
+      <ul id="mustList"></ul>
+    </div>
+    <div class="task-column need">
+      <h4>⏰ Need</h4>
+      <ul id="needList"></ul>
+    </div>
+    <div class="task-column should">
+      <h4>🕗 Should</h4>
+      <ul id="shouldList"></ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <h3 style="text-align:center;">
+    <img src="https://cdn-icons-png.flaticon.com/512/747/747310.png" alt="Cute Calendar" style="width: 30px; vertical-align: middle; margin-right: 5px;">
+    Lịch trình yêu thương của bé
+  </h3>
+
+  <div id='calendar'></div>
+  <!-- Popup tạo sự kiện -->
+<div id="eventPopup" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%);
+     background:white; border:2px solid hotpink; border-radius:20px; padding:20px; box-shadow:0 0 10px pink; z-index:9999;">
+  <h3 style="color:#e60073; margin-top:0;">💘 Tạo sự kiện mới</h3>
+  <label>💌 Tên sự kiện:</label><br>
+  <input type="text" id="eventTitle" style="width:100%; margin-bottom:10px; padding:8px; border-radius:10px; border:1px solid pink;"><br>
+  
+  <label>⏱ Thời lượng:</label><br>
+  <select id="eventDuration" style="width:100%; margin-bottom:10px; padding:8px; border-radius:10px; border:1px solid pink;">
+    <option value="30">30 phút</option>
+    <option value="45">45 phút</option>
+    <option value="60" selected>1 giờ</option>
+    <option value="90">1.5 giờ</option>
+    <option value="120">2 giờ</option>
+  </select><br> 
+  <label>🔁 Lặp lại:</label><br>
+  <select id="eventRepeat" style="width:100%; margin-bottom:10px; padding:8px; border-radius:10px; border:1px solid pink;">
+    <option value="none" selected>Không lặp lại</option>
+    <option value="daily">Hằng ngày</option>
+    <option value="weekly">Hằng tuần</option>
+    <option value="monthly">Hằng tháng</option>
+  </select><br>
+  <label>🎨 Màu sắc:</label><br>
+<select id="eventColor" style="width:100%; margin-bottom:10px; padding:8px; border-radius:10px; border:1px solid pink;">
+  <option value="#ff66a3" selected>Hồng 🍓</option>
+  <option value="#66ccff">Xanh da trời 💧</option>
+  <option value="#ffcc66">Vàng 🍯</option>
+  <option value="#cc99ff">Tím 💜</option>
+  <option value="#66ff99">Xanh lá 🍃</option>
+</select>
+
+  <button onclick="saveEventPopup()">💖 Lưu sự kiện</button>
+  <button onclick="closeEventPopup()">❌ Hủy</button>
+</div>
+
+<script>
+  // ✅ Khai báo biến toàn cục để dùng ở mọi nơi
+  let selectedStart = null;
+  let calendarRef = null;
+
+  const scoreDisplay = document.getElementById("scoreDisplay");
+
+  function startApp() {
+    const welcome = document.getElementById("welcomeOverlay");
+    welcome.classList.add("slide-out");
+    setTimeout(() => welcome.style.display = "none", 1000);
+    loadTasks();
+  }
+
+  function loadTasks() {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    const score = parseInt(localStorage.getItem("score")) || 0;
+    scoreDisplay.textContent = `Điểm của bé: ${score}`;
+
+    document.getElementById("mustList").innerHTML = "";
+    document.getElementById("needList").innerHTML = "";
+    document.getElementById("shouldList").innerHTML = "";
+
+    tasks.forEach((task, index) => {
+      const li = document.createElement("li");
+
+      li.innerHTML = `
+        <div>💗 ${task.name}</div>
+        <small>Ngày thêm: ${new Date(task.date).toLocaleString()}</small><br>
+        <strong>Hạn chót: ${new Date(task.dueDate).toLocaleDateString()}</strong>
+      `;
+
+      const now = new Date();
+      const dueDate = new Date(task.dueDate);
+      dueDate.setHours(23,59,59,999);
+      const overdue = now > dueDate;
+
+      if (!task.done && overdue) {
+        const reminder = document.createElement("div");
+        reminder.textContent = "🔔 Trễ hạn rồi đó bé 😢";
+        reminder.classList.add("reminder");
+        li.appendChild(reminder);
+
+        if (!task.penalized) {
+          updateScore(-5);
+          task.penalized = true;
+          saveTasks(tasks);
+        }
+      }
+
+      if (task.done) {
+        const status = document.createElement("div");
+        status.textContent = "✅ Đã done 🎉";
+        status.classList.add("completed");
+        li.appendChild(status);
+
+        if (task.imageData) {
+          const img = document.createElement("img");
+          img.src = task.imageData;
+          img.className = "submitted-image";
+          li.appendChild(img);
+        }
+      }
+
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = "image/*";
+
+      const submitBtn = document.createElement("button");
+      submitBtn.textContent = "💌 Nộp + Hình ảnh";
+      submitBtn.onclick = () => submitWithImage(index, fileInput);
+
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "✏️ Sửa";
+      editBtn.onclick = () => editTask(index);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "🗑️ Xóa";
+      deleteBtn.onclick = () => deleteTask(index);
+
+      const actionDiv = document.createElement("div");
+      actionDiv.className = "action-buttons";
+      actionDiv.appendChild(fileInput);
+      actionDiv.appendChild(submitBtn);
+      actionDiv.appendChild(editBtn);
+      actionDiv.appendChild(deleteBtn);
+
+      li.appendChild(actionDiv);
+
+      if (task.priority === "Must") {
+        document.getElementById("mustList").appendChild(li);
+      } else if (task.priority === "Need") {
+        document.getElementById("needList").appendChild(li);
+      } else {
+        document.getElementById("shouldList").appendChild(li);
+      }
+    });
+  }
+
+  function addTask() {
+    const name = document.getElementById("taskInput").value.trim();
+    const priority = document.getElementById("priorityInput").value;
+    const dueDate = document.getElementById("dueDateInput").value;
+    if (!name || !dueDate) return;
+
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.push({ name, priority, dueDate, date: new Date(), done: false, penalized: false });
+    saveTasks(tasks);
+    document.getElementById("taskInput").value = "";
+    loadTasks();
+  }
+
+  function submitWithImage(index, fileInput) {
+    const file = fileInput.files[0];
+    if (!file) {
+      alert("Chọn ảnh để nộp nha bé!");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      const task = tasks[index];
+      if (!task.done) {
+        const now = new Date();
+        const due = new Date(task.dueDate);
+        due.setHours(23,59,59,999);
+        if (now <= due) updateScore(3);
+        else updateScore(-5);
+      }
+      task.done = true;
+      task.imageData = e.target.result;
+      saveTasks(tasks);
+      alert("💘 Bé nộp bài giỏi quá! Hun hun hun 💋");
+      loadTasks();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateScore(change) {
+    let score = parseInt(localStorage.getItem("score")) || 0;
+    score += change;
+    localStorage.setItem("score", score);
+  }
+
+  function saveTasks(tasks) {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }
+
+  function deleteTask(index) {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    if (tasks[index].done) updateScore(-3);
+    tasks.splice(index, 1);
+    saveTasks(tasks);
+    loadTasks();
+  }
+
+  function editTask(index) {
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    const newName = prompt("Đổi tên bài tập nha bé:", tasks[index].name);
+    if (newName && newName.trim() !== "") {
+      tasks[index].name = newName.trim();
+      saveTasks(tasks);
+      loadTasks();
+    }
+  }
+
+  function saveCalendarEvents(events) {
+    const data = events.map(e => ({
+      title: e.title,
+      start: e.start.toISOString(),
+      end: e.end.toISOString(),
+      allDay: e.allDay,
+      color: e.backgroundColor || e.color
+    }));
+    localStorage.setItem("calendarEvents", JSON.stringify(data));
+  }
+
+  function saveEventPopup() {
+    const title = document.getElementById("eventTitle").value.trim();
+    const duration = parseInt(document.getElementById("eventDuration").value);
+    const repeat = document.getElementById("eventRepeat").value;
+    const color = document.getElementById("eventColor").value;
+
+    if (!title || !selectedStart) {
+      alert("🥺 Nhập tên sự kiện nha bé!");
+      return;
+    }
+
+    const start = new Date(selectedStart);
+    const end = new Date(start);
+    end.setMinutes(start.getMinutes() + duration);
+
+    const eventsToAdd = [];
+
+    eventsToAdd.push({
+      title, start, end, allDay: false, color
+    });
+
+    if (repeat !== "none") {
+      const repeatCount = 10;
+      for (let i = 1; i < repeatCount; i++) {
+        const newStart = new Date(start);
+        const newEnd = new Date(end);
+        if (repeat === "daily") {
+          newStart.setDate(newStart.getDate() + i);
+          newEnd.setDate(newEnd.getDate() + i);
+        } else if (repeat === "weekly") {
+          newStart.setDate(newStart.getDate() + i * 7);
+          newEnd.setDate(newEnd.getDate() + i * 7);
+        } else if (repeat === "monthly") {
+          newStart.setMonth(newStart.getMonth() + i);
+          newEnd.setMonth(newEnd.getMonth() + i);
+        }
+        eventsToAdd.push({ title, start: newStart, end: newEnd, allDay: false, color });
+      }
+    }
+
+    eventsToAdd.forEach(event => calendarRef.addEvent(event));
+    saveCalendarEvents(calendarRef.getEvents());
+    closeEventPopup();
+  }
+
+  function closeEventPopup() {
+    document.getElementById("eventPopup").style.display = "none";
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const calendarEl = document.getElementById('calendar');
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+      },
+      height: 'auto',
+      contentHeight: 'auto',
+      selectable: true,
+      longPressDelay: 0,
+      editable: true,
+      slotDuration: '01:00:00',
+      slotMinTime: '06:00:00',
+      slotMaxTime: '24:00:00',
+      events: JSON.parse(localStorage.getItem("calendarEvents")) || [],
+      select: function (info) {
+        selectedStart = info.start;
+        calendarRef = calendar;
+        document.getElementById("eventTitle").value = "";
+        document.getElementById("eventDuration").value = "60";
+        document.getElementById("eventRepeat").value = "none";
+        document.getElementById("eventColor").value = "#ff66a3";
+        document.getElementById("eventPopup").style.display = "block";
+      },
+      eventClick: function (info) {
+        if (confirm(`Xóa sự kiện "${info.event.title}"?`)) {
+          info.event.remove();
+          saveCalendarEvents(calendar.getEvents());
+        }
+      }
+    });
+
+    calendar.render();
+    calendarRef = calendar;
+  });
+</script>
+
+  </script>
+</body>
+</html>
